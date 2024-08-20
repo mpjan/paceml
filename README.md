@@ -134,20 +134,26 @@ Examples:
 @interval[Hill Repeats]{2min}{TZ}{note="50m uphill sprint"}
 ```
 
----
-
-@!parei aqui
-
 #### 1.5 Repetitions
 
-Repetitions are enclosed in `@reps[title]{count}` and `@end_reps` tags. The `[title]` is optional.
+Repetitions define sets of intervals that are repeated multiple times. A repetition block starts with `@reps[title]{count}`, followed by the intervals to be repeated, indented within the block.
+
+Example:
 
 ```
 @reps[Main Set]{4}
-  @interval[Work]{400m}{ZT}
-  @interval[Recovery]{90s}{RA}
-@end_reps
+  @interval[Work]{400m}{TZ}
+  @interval[Recovery]{90s}{AR}
 ```
+
+Guidelines:
+
+1. The intervals within a repetition block should be indented with a consistent number of spaces or tabs. The indentation level should be maintained throughout the block.
+2. The `[title]` is optional.
+
+---
+
+@!parei aqui
 
 ### 2.7 Calculations
 
