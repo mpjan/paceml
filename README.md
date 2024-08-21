@@ -76,13 +76,15 @@ Example:
 Zones can also be defined using heart rate ranges:
 
 ```
-@define_zone[AR]{100}{120}{Active Recovery}
+@define_zone[AR]{100bpm}{120bpm}{Active Recovery}
 ```
 
 Guidelines:
 
 1. At least one zone definition is required, but any number of zones can be defined.
 2. The `start` value represents the easiest band of the zone, that is, the slowest pace or lowest heart rate. The `end` value represents the hardest band of the zone.
+3. A zone definition should have the same unit of measurement for both the `start` and `end` values.
+4. Zone names should be unique, the exception being if the same zone name is used for a pace and a heart rate zone. E.g., `AR` for Active Recovery in both a pace and heart rate zone.
 
 ---
 
@@ -111,7 +113,7 @@ Examples:
 Guidelines:
 
 1. `duration_or_distance` and `zone_name` are required fields.
-2. `[title]` can be used to provide a brief description of the interval.
+2. `[title]` is optional, and can be used to provide a brief description of the interval.
 3. `additional_parameters` can include specific details about the interval, such as incline, terrain, or notes (see below).
 
 ##### 1.4.1 Intervals with Additional Parameters
@@ -151,34 +153,30 @@ Guidelines:
 1. The intervals within a repetition block should be indented with a consistent number of spaces or tabs. The indentation level should be maintained throughout the block.
 2. The `[title]` is optional.
 
----
+#### 1.6 Calculations
 
-@!parei aqui
-
-### 2.7 Calculations
-
-Total distance and time can be calculated using:
+Total distance and time for the workout can be calculated by adding the following tags to the end of the document:
 
 ```
 @total_distance
 @total_time
 ```
 
-### 2.8 Distance and Time Units
+#### 1.7 Units
 
-PaceML supports specific formats for distance and time units to ensure consistency and clarity in workout descriptions.
+Distance, time and heart rate zones should be specified using consistent units.
 
-#### 2.8.1 Distance Units
+##### 1.7.1 Distance Units
 
 Allowed distance units are:
+
 - m (meters)
 - km (kilometers)
 - mi (miles)
 - yd (yards)
 
-Format: A number followed immediately by the unit, without spaces.
-
 Examples:
+
 ```
 400m
 5km
@@ -186,66 +184,132 @@ Examples:
 800yd
 ```
 
-#### 2.8.2 Time Units
+Guidelines:
+
+1. The unit should be placed immediately after the number, without spaces.
+2. Units are lowercase.
+3. Decimals are specified as dots (`.`).
+
+##### 1.7.2 Time Units
 
 Allowed time units are:
+
 - s (seconds)
 - min (minutes)
 - h (hours)
 
-For durations less than one hour, times can be expressed in minutes and seconds using the format `MM:SS`.
-
-Format: 
-- For single unit times: A number followed immediately by the unit, without spaces.
-- For MM:SS format: Two digits for minutes, colon, two digits for seconds.
-
 Examples:
+
 ```
 30s
 5min
 2h
 01:30 (1 minute 30 seconds)
+2:30 (2 minutes 30 seconds)
 10:00 (10 minutes)
 ```
 
-#### 2.8.3 Pace Units
+Guidelines:
 
-Pace should be expressed in time per distance unit.
+1. For single-unit times, the unit should be placed immediately after the number, without spaces, with the unit in lowercase.
+2. For multi-unit times, the format should be `MM:SS` or `M:SS` for single-digit minutes.
 
-Format: `MM:SS/km` or `MM:SS/mi`
+##### 1.7.3 Pace Units
+
+Pace should be expressed in time per distance unit, separated by a slash (`/`).
 
 Examples:
+
 ```
 4:30/km
+05:30/km
 7:15/mi
 ```
 
-## 3. Complete Example
+##### 1.7.4 Heart Rate Units
+
+Heart rate units are specified as beats per minute (bpm).
+
+Examples:
+
+```
+120bpm
+160bpm
+```
+
+Guidelines:
+
+1. The unit should be placed immediately after the number, without spaces.
+2. Units are lowercase.
+
+### 2. Examples
+
+#### 2.1 Basic Workout
+
+```
+@define_zone[RZ]{6:00/km}{5:30/km}{Regenerative Zone}
+@define_zone[TZ]{3:30/km}{3:00/km}{Total Effort Zone}
+
+@interval{10min}{RZ}
+@interval{5km}{TZ}
+@interval{10min}{RZ}
+```
+
+#### 2.2 More Complete Workout
+
+##### 2.2.1 Track Workout
 
 ```
 @title{Tuesday Interval Session}
 @date{2024-08-15}
-@athlete{John Doe}
+@athlete{Forrest Gump}
 
-@define_pace{ZR}{5:30/km}{5:50/km}
-@define_pace{ZT}{3:40/km}{4:10/km}
+@define_zone[AR]{6:00/km}{5:30/km}{Active Recovery}
+@define_zone{RZ}{5:30/km}{5:50/km}{Regenerative Zone}
+@define_zone{MZ}{4:50/km}{5:10/km}{Maintenance Zone}
+@define_zone{TZ}{3:40/km}{4:10/km}{Total Effort Zone}
 
-@interval[Warm-up]{10min}{ZR}{note=Focus on gradually increasing your pace}
+@interval[Warm-up]{10min}{RZ}{note=Don't start too fast}
 
 @reps[Main Set]{6}
-  @interval[Speed]{400m}{ZT}{note="Push the pace, but maintain form"}
-  @interval[Recovery]{90s}{RA}
-@end_reps
+  @interval[Speed]{400m}{TZ}{note="Push the pace, but maintain form. First rep is a build-up and can be slower."}
+  @interval[Recovery]{90s}{AR}
 
-@interval[Cool-down]{10min}{ZR}{note="Gradually decrease pace, focus on breathing"}
-
-@interval[Flexibility work]{5min}{ZR}{incline=2%, terrain=treadmill, note="Keep cadence high, even at lower speed"}
+@interval[Cool-down]{10min}{RZ}{note="Gradually decrease pace, focus on breathing"}
 
 @total_distance
 @total_time
 ```
 
-## 4. Parsing Rules
+#### 2.3 Hill Repeats
+
+```
+@title{Hill Repeats}
+@date{2024-08-15}
+@athlete{John Doe}
+
+@define_zone[AR]{6:00/km}{5:30/km}{Active Recovery}
+@define_zone{RZ}{5:30/km}{5:50/km}{Regenerative Zone}
+@define_zone{MZ}{4:50/km}{5:10/km}{Maintenance Zone}
+@define_zone{TZ}{3:40/km}{4:10/km}{Total Effort Zone}
+
+@interval[Warm-up]{1km}{RZ}
+
+@reps[Hill Repeats]{6}
+  @interval[Hill Climb]{2min}{TZ}{incline=15%, note=Focus on form}
+  @interval[Recovery]{90s}{AR}
+
+@interval[Cool-down]{1km}{RZ}
+
+@total_distance
+@total_time
+```
+
+---
+
+@!parei aqui
+
+## 3. Parsing Rules
 
 1. Each line represents a single workout component unless within a repetition block.
 2. Lines starting with `#` are treated as comments and ignored.
@@ -259,6 +323,7 @@ Examples:
 ## 5. Output
 
 Parsers should be able to generate:
+
 1. A human-readable summary of the workout
 2. A structured data format (e.g., JSON) for integration with other systems
 3. Calculated total distance and time
@@ -266,6 +331,6 @@ Parsers should be able to generate:
 ## 6. Extensions
 
 Future versions may include:
-1. Support for heart rate zones
-2. Integration with GPS data
-3. Exporting to common fitness app formats
+
+1. Exporting to common fitness app formats
+2. Support for additional workout types (e.g., cycling, swimming)
