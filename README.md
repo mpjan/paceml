@@ -6,6 +6,21 @@
 
 PaceML is a markup language designed for representing running workouts in a human-readable and machine-parsable format. It allows for the detailed description of complex workouts including intervals, repetitions, and specialized running segments.
 
+This is what a basic workout might look like in PaceML:
+
+```
+# Define the pace zones
+@define_zone[RZ]{6:00/km}{5:30/km}{Regenerative Zone}
+@define_zone[TZ]{3:30/km}{3:00/km}{Total Effort Zone}
+
+# The workout itself
+@interval{10min}{RZ}
+@interval{5km}{TZ}
+@interval{10min}{RZ}
+```
+
+See the full specification below, and more complete examples in the [Examples](@!todo) section.
+
 ## PaceML Specification
 
 ### 1. Syntax
@@ -78,6 +93,13 @@ Zones can also be defined using heart rate ranges:
 ```
 @define_zone[AR]{100bpm}{120bpm}{Active Recovery}
 ```
+
+Zones can also be defined in a separate document and referenced in the workout in the following way:
+
+```
+@import_zones{path/to/zones.paceml}
+```
+@!expand on this?
 
 Guidelines:
 
