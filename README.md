@@ -96,12 +96,11 @@ Zones can also be defined using heart rate ranges:
 @define_zone[AR]{100bpm}{120bpm}{Active Recovery}
 ```
 
-Zones can also be defined in a separate document and referenced in the workout in the following way:
+Zones can be defined in a separate document and referenced in the workout in the following way:
 
 ```
-@import_zones{path/to/zones.paceml}
+@import_zones{path/to/zones}
 ```
-@!expand on this?
 
 Guidelines:
 
@@ -314,6 +313,8 @@ Hard interval session on the track.
 @date{2024-08-15}
 @athlete{John Doe}
 
+Today's workout focuses on hill repeats. Hill repeats are a great way to build strength.
+
 @define_zone[AR]{6:00/km}{5:30/km}{Active Recovery}
 @define_zone{RZ}{5:30/km}{5:50/km}{Regenerative Zone}
 @define_zone{MZ}{4:50/km}{5:10/km}{Maintenance Zone}
@@ -331,22 +332,91 @@ Hard interval session on the track.
 @total_time
 ```
 
+### 3. Parsing Rules
+
+#### 3.1 General Parsing Flow
+
+##### 3.1.1 Tokenization
+
+The parser should first tokenize the PaceML document by breaking it down into individual elements, such as metadata, zone definitions, intervals, repetitions, calculations, and free-form notes.
+
+Comments should be ignored during parsing.
+
+Blank lines should be skipped.
+
+##### 3.1.2 Order of Parsing
+
+1. **Metadata**:
+  - Start by identifying and processing metadata at the beginning of the document. 
+  - If any metadata fields are in an incorrect format, an error should be raised.
+2. **Zone Definitions**:
+  - Process zone definitions next. 
+  - All zones referenced later in the document should be defined before their usage.
+  - Check for consistency in units across zones.
+  - If using `@import_zones`, process this before any local zone definitions.
+3. **Intervals and Repetitions**:
+  - After zones, intervals should be parsed.
+  - Intervals and repetitions should be parsed in the order they appear in the document. 
+  - Each interval must reference an existing zone and include a valid duration or distance.
+  - All referenced zones should be defined. If a zone is missing, raise an error.
+  - Verify that interval units are consistent with the zone definitions.
+  - The intervals within repetition blocks should be processed recursively.
+4. **Calculations**:
+  - Calculate total distance and time after all intervals and repetitions have been processed.
+  
 ---
 
 @!parei aqui
 
-## 3. Parsing Rules
+##### Handling Imports:
+- If the document includes an `@import_zones` statement, the parser should load and parse the referenced file before processing the rest of the document.
+- Implement safeguards against circular imports or excessive nesting of imports.
 
-1. Each line represents a single workout component unless within a repetition block.
-2. Lines starting with `#` are treated as comments and ignored.
-3. Metadata lines (starting with `@`) are processed before the workout content.
-4. Custom pace definitions must precede their usage in the workout.
-5. Repetition blocks (between `@reps` and `@end_reps`) are processed as a single unit, repeating the enclosed intervals.
-6. Calculations (`@total_distance` and `@total_time`) are processed after all intervals.
-7. When using a defined pace zone in an interval, any pace within the defined range is considered valid.
-8. Titles in square brackets `[]` for `@interval` and `@reps` are optional. If present, they should be used to provide a descriptive name for the interval or repetition set when displaying the workout.
+#### 3.2 Error Handling
 
-## 5. Output
+##### Syntax Errors:
+- If any syntax error is encountered (e.g., missing curly braces, undefined zone), the parser should raise an error with a clear message indicating the nature of the error and its location in the document.
+- Consider implementing a system for multiple error reporting, allowing the parser to collect and report multiple errors in a single pass.
+
+##### Missing Metadata:
+- If required metadata fields are missing, the parser should either raise an error or provide a warning depending on the importance of the metadata for the workout's execution.
+- Implement a system to distinguish between required and optional metadata fields.
+
+##### Zone Definition Errors:
+- If a zone is defined with inconsistent units or overlapping ranges, the parser should raise an error. 
+- The parser should check for duplicate zone names and handle them appropriately (e.g., raise an error or use the last definition).
+- Validate that zone ranges are logical (e.g., start value < end value for pace zones).
+
+##### Interval and Repetition Errors:
+- The parser should validate that all intervals are properly defined and that repetition counts make sense. 
+- Any inconsistencies or illogical combinations should trigger an error (e.g., negative distances or times, zero repetitions).
+- Check for references to undefined zones within intervals.
+
+##### Calculation Errors:
+- If there is an issue calculating total distance or time (e.g., due to incompatible units), the parser should raise an error.
+- Implement proper handling for potential arithmetic overflow in calculations.
+
+#### 3.3 Additional Considerations
+
+##### Unit Conversion:
+- Implement a robust system for handling and converting between different units (e.g., km to miles, minutes to seconds).
+- Ensure that all calculations and comparisons are done using a standard internal representation to avoid floating-point errors.
+
+#### Extensibility:
+- Design the parser to be easily extensible for future additions to the PaceML specification.
+- Implement a plugin system or use a strategy pattern to allow for easy addition of new features or modifications to existing parsing rules.
+
+##### Performance:
+- For large PaceML documents, consider implementing streaming parsing techniques to handle the document in chunks rather than loading it entirely into memory.
+- Optimize the parsing process for common cases while still correctly handling edge cases.
+
+##### Localization:
+- Consider implementing support for different locales, particularly for handling decimal separators in numeric values (e.g., 3.14 vs 3,14).
+
+##### Output Format:
+- Define a clear and consistent output format for the parsed PaceML document, possibly using a structured format like JSON or XML for easy consumption by other systems.
+
+### 4. Output
 
 Parsers should be able to generate:
 
@@ -354,7 +424,7 @@ Parsers should be able to generate:
 2. A structured data format (e.g., JSON) for integration with other systems
 3. Calculated total distance and time
 
-## 6. Extensions
+### 5. Extensions
 
 Future versions may include:
 
