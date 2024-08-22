@@ -42,7 +42,6 @@ Available metadata types:
 1. `@title`: Name or title of the workout.
 2. `@date`: Date the workout is scheduled.
 3. `@athlete`: Name of the athlete performing the workout.
-4. `@notes`: Additional notes or comments about the workout.
 
 The general syntax for metadata is:
 
@@ -50,13 +49,16 @@ The general syntax for metadata is:
 @type{value}
 ```
 
+You can also add free-form notes to a workout. Write these on their own lines.
+
 Example:
 
 ```
 @title{Easy Tuesday Run}
 @date{2024-08-15}
-@athlete{John Doe}
-@notes{Focus on form and on keeping a 180 SPM cadence}
+@athlete{Forrest}
+
+Focus on form and on keeping a 180 SPM cadence # This is a note
 ```
 
 Guidelines:
@@ -284,7 +286,9 @@ Guidelines:
 ```
 @title{Tuesday Interval Session}
 @date{2024-08-15}
-@athlete{Forrest Gump}
+@athlete{Forrest}
+
+Hard interval session on the track.
 
 @define_zone[AR]{6:00/km}{5:30/km}{Active Recovery}
 @define_zone{RZ}{5:30/km}{5:50/km}{Regenerative Zone}
