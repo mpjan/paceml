@@ -1,6 +1,41 @@
 # Table of Contents
 
-@!todo
+1. [About PaceML](#about-paceml-pace-markup-language)
+2. [PaceML Specification](#paceml-specification)
+   1. [Syntax](#1-syntax)
+      1. [Comments](#11-comments)
+      2. [Metadata](#12-metadata)
+      3. [Zones](#13-zones)
+      4. [Intervals](#14-intervals)
+         1. [Intervals with Additional Parameters](#141-intervals-with-additional-parameters)
+      5. [Repetitions](#15-repetitions)
+      6. [Calculations](#16-calculations)
+      7. [Units](#17-units)
+         1. [Distance Units](#171-distance-units)
+         2. [Time Units](#172-time-units)
+         3. [Pace Units](#173-pace-units)
+         4. [Heart Rate Units](#174-heart-rate-units)
+   2. [Examples](#2-examples)
+      1. [Basic Workout](#21-basic-workout)
+      2. [More Complete Workout](#22-more-complete-workout)
+         1. [Track Workout](#221-track-workout)
+         2. [Hill Repeats](#222-hill-repeats)
+   3. [Parsing Rules](#3-parsing-rules)
+      1. [General Parsing Flow](#31-general-parsing-flow)
+         1. [Tokenization](#311-tokenization)
+         2. [Order of Parsing](#312-order-of-parsing)
+      2. [General Error Handling](#32-general-error-handling)
+      3. [Additional Considerations](#33-additional-considerations)
+         1. [Unit Conversion](#331-unit-conversion)
+         2. [Extensibility](#332-extensibility)
+   4. [Output](#4-output)
+      1. [General Output](#41-general-output)
+      2. [Examples](#42-examples)
+         1. [Basic Workout](#421-basic-workout)
+         2. [More Complete Workout](#422-more-complete-workout)
+            1. [Track Workout](#4221-track-workout)
+            2. [Hill Repeats](#4222-hill-repeats)
+   5. [Extensions](#5-extensions)
 
 ## About PaceML (Pace Markup Language)
 
@@ -19,7 +54,7 @@ This is what a basic workout might look like in PaceML:
 @interval{10min}{RZ}
 ```
 
-See the full specification below, and more complete examples in the [Examples](@!todo) section.
+See the full specification below, and more complete examples in the [Examples](#2-examples) section.
 
 ## PaceML Specification
 
@@ -306,7 +341,7 @@ Hard interval session on the track.
 @total_time
 ```
 
-#### 2.3 Hill Repeats
+##### 2.2.2 Hill Repeats
 
 ```
 @title{Hill Repeats}
@@ -340,9 +375,7 @@ Today's workout focuses on hill repeats. Hill repeats are a great way to build s
 
 The parser should first tokenize the PaceML document by breaking it down into individual elements, such as metadata, zone definitions, intervals, repetitions, calculations, and free-form notes.
 
-Comments should be ignored during parsing.
-
-Blank lines should be skipped.
+Comments and blank lines should be ignored during parsing.
 
 ##### 3.1.2 Order of Parsing
 
@@ -352,7 +385,11 @@ Blank lines should be skipped.
 2. **Zone Definitions**:
   - Process zone definitions next. 
   - All zones referenced later in the document should be defined before their usage.
-  - Check for consistency in units across zones.
+  - Check for
+    - Consistency in units across zones.
+    - Logical ranges (e.g., start value < end value for pace zones).
+    - Duplicate zone names.
+    - Overlapping zone ranges.
   - If using `@import_zones`, process this before any local zone definitions.
 3. **Intervals and Repetitions**:
   - After zones, intervals should be parsed.
@@ -361,68 +398,59 @@ Blank lines should be skipped.
   - All referenced zones should be defined. If a zone is missing, raise an error.
   - Verify that interval units are consistent with the zone definitions.
   - The intervals within repetition blocks should be processed recursively.
-4. **Calculations**:
+4. **Free-form Notes**:
+  - Then process free-form notes.
+5. **Calculations**:
   - Calculate total distance and time after all intervals and repetitions have been processed.
-  
----
 
-@!parei aqui
+#### 3.2 General Error Handling
 
-##### Handling Imports:
-- If the document includes an `@import_zones` statement, the parser should load and parse the referenced file before processing the rest of the document.
-- Implement safeguards against circular imports or excessive nesting of imports.
+The parser should be designed to handle errors gracefully and continue processing if possible.
 
-#### 3.2 Error Handling
+If any syntax error is encountered (e.g., missing curly braces, undefined zone), the parser should raise an error with a clear message indicating the nature of the error and the line number where it occurred.
 
-##### Syntax Errors:
-- If any syntax error is encountered (e.g., missing curly braces, undefined zone), the parser should raise an error with a clear message indicating the nature of the error and its location in the document.
-- Consider implementing a system for multiple error reporting, allowing the parser to collect and report multiple errors in a single pass.
+The parser should be able to handle multiple syntax errors in a single document, collecting and reporting all errors in a single pass.
 
-##### Missing Metadata:
-- If required metadata fields are missing, the parser should either raise an error or provide a warning depending on the importance of the metadata for the workout's execution.
-- Implement a system to distinguish between required and optional metadata fields.
+Any inconsistencies or illogical combinations should trigger an error (e.g., negative distances or times, zero repetitions).
 
-##### Zone Definition Errors:
-- If a zone is defined with inconsistent units or overlapping ranges, the parser should raise an error. 
-- The parser should check for duplicate zone names and handle them appropriately (e.g., raise an error or use the last definition).
-- Validate that zone ranges are logical (e.g., start value < end value for pace zones).
-
-##### Interval and Repetition Errors:
-- The parser should validate that all intervals are properly defined and that repetition counts make sense. 
-- Any inconsistencies or illogical combinations should trigger an error (e.g., negative distances or times, zero repetitions).
-- Check for references to undefined zones within intervals.
-
-##### Calculation Errors:
-- If there is an issue calculating total distance or time (e.g., due to incompatible units), the parser should raise an error.
-- Implement proper handling for potential arithmetic overflow in calculations.
+Check for references to undefined zones within intervals.
 
 #### 3.3 Additional Considerations
 
-##### Unit Conversion:
-- Implement a robust system for handling and converting between different units (e.g., km to miles, minutes to seconds).
-- Ensure that all calculations and comparisons are done using a standard internal representation to avoid floating-point errors.
+##### 3.3.1 Unit Conversion:
 
-#### Extensibility:
-- Design the parser to be easily extensible for future additions to the PaceML specification.
-- Implement a plugin system or use a strategy pattern to allow for easy addition of new features or modifications to existing parsing rules.
+Implement a robust system for handling and converting between different units (e.g., km to miles, minutes to seconds).
 
-##### Performance:
-- For large PaceML documents, consider implementing streaming parsing techniques to handle the document in chunks rather than loading it entirely into memory.
-- Optimize the parsing process for common cases while still correctly handling edge cases.
+Ensure that all calculations and comparisons are done using a standard internal representation (e.g. seconds for time and meters for distance).
 
-##### Localization:
-- Consider implementing support for different locales, particularly for handling decimal separators in numeric values (e.g., 3.14 vs 3,14).
+##### 3.3.2 Extensibility
 
-##### Output Format:
-- Define a clear and consistent output format for the parsed PaceML document, possibly using a structured format like JSON or XML for easy consumption by other systems.
+Design the parser to be easily extensible for future additions to the PaceML specification.
 
 ### 4. Output
 
+#### 4.1 General Output
+
 Parsers should be able to generate:
 
-1. A human-readable summary of the workout
-2. A structured data format (e.g., JSON) for integration with other systems
-3. Calculated total distance and time
+1. A JSON representation of the workout for integration with other systems
+2. Calculated total distance and time
+
+#### 4.2 Examples
+
+##### 4.2.1 Basic Workout
+
+@!todo
+
+##### 4.2.2 More Complete Workout
+
+###### 4.2.2.1 Track Workout
+
+@!todo
+
+###### 4.2.2.2 Hill Repeats
+
+@!todo
 
 ### 5. Extensions
 
