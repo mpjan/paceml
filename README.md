@@ -111,7 +111,7 @@ Zones define different running zones based on pace or heart rate.
 Zones are defined using:
 
 ```
-@define_zone[zone_name]{start}{end}{description}
+@define_zone[zone]{start}{end}{description}
 ```
 
 Example:
@@ -150,13 +150,13 @@ Guidelines:
 
 Intervals represent specific segments of a workout with a defined:
 
-- Duration or distance; and
+- Amount (duration or distance); and
 - Zone
 
 Intervals are the core building blocks of a workout and are defined using:
 
 ```
-@interval[title]{duration_or_distance}{zone_name}{additional_parameters}
+@interval[title]{amount}{zone}{additional_parameters}
 ```
 
 Examples:
@@ -170,13 +170,13 @@ Examples:
 
 Guidelines:
 
-1. `duration_or_distance` and `zone_name` are required fields.
+1. `amount` and `zone` are required fields.
 2. `[title]` is optional, and can be used to provide a brief description of the interval.
 3. `additional_parameters` can include specific details about the interval, such as incline, terrain, or notes (see below).
 
 ##### 1.4.1 Intervals with Additional Parameters
 
-Intervals can include additional parameters to describe various aspects of the workout beyond just duration/distance and zone.
+Intervals can include additional parameters to describe various aspects of the workout beyond just the amount and zone.
 
 `additional_parameters` can include one or more key-value pairs, separated by commas. These parameters allow for flexible specification of various workout attributes. The available parameters are:
 
@@ -394,7 +394,7 @@ Comments and blank lines should be ignored during parsing.
 3. **Intervals and Repetitions**:
   - After zones, intervals should be parsed.
   - Intervals and repetitions should be parsed in the order they appear in the document. 
-  - Each interval must reference an existing zone and include a valid duration or distance.
+  - Each interval must reference an existing zone and include a valid amount.
   - All referenced zones should be defined. If a zone is missing, raise an error.
   - Verify that interval units are consistent with the zone definitions.
   - The intervals within repetition blocks should be processed recursively.
@@ -402,6 +402,7 @@ Comments and blank lines should be ignored during parsing.
   - Then process free-form notes.
 5. **Calculations**:
   - Calculate total distance and time after all intervals and repetitions have been processed.
+  - Total distance and time will depend on the exact pace of the intervals. Therefore, the output can either be a point-value based on the mid-point of the zones, or a range based on the slowest and fastest bands of the zone.
 
 #### 3.2 General Error Handling
 
@@ -440,17 +441,179 @@ Parsers should be able to generate:
 
 ##### 4.2.1 Basic Workout
 
-@!todo
+```json
+{
+  "zones": [
+    {
+      "zone": "RZ",
+      "start": "6:00/km",
+      "end": "5:30/km",
+      "description": "Regenerative Zone"
+    },
+    {
+      "zone": "TZ",
+      "start": "3:30/km",
+      "end": "3:00/km",
+      "description": "Total Effort Zone"
+    }
+  ],
+  "intervals": [
+    {
+      "amount": "10min",
+      "zone": "RZ"
+    },
+    {
+      "amount": "5km",
+      "zone": "TZ"
+    },
+    {
+      "amount": "10min",
+      "zone": "RZ"
+    }
+  ],
+}
+```
 
 ##### 4.2.2 More Complete Workout
 
 ###### 4.2.2.1 Track Workout
 
-@!todo
+```json
+{
+  "title": "Tuesday Interval Session",
+  "date": "2024-08-15",
+  "athlete": "Forrest",
+  "notes": ["Hard interval session on the track."],
+  "zones": [
+    {
+      "zone": "AR",
+      "start": "6:00/km",
+      "end": "5:30/km",
+      "description": "Active Recovery"
+    },
+    {
+      "zone": "RZ",
+      "start": "6:00/km",
+      "end": "5:30/km",
+      "description": "Regenerative Zone"
+    },
+    {
+      "zone": "MZ",
+      "start": "4:50/km",
+      "end": "5:10/km",
+      "description": "Maintenance Zone"
+    },
+    {
+      "zone": "TZ",
+      "start": "3:30/km",
+      "end": "3:00/km",
+      "description": "Total Effort Zone"
+    }
+  ],
+  "intervals": [
+    {
+      "title": "Warm-up",
+      "amount": "10min",
+      "zone": "RZ",
+      "notes": ["Don't start too fast"]
+    },
+    "reps": {
+      "title": "Main Set",
+      "count": 6,
+      "intervals": [
+        {
+          "title": "Speed",
+          "amount": "400m",
+          "zone": "TZ",
+          "notes": ["Push the pace, but maintain form. First rep is a build-up and can be slower."]
+        },
+        {
+          "title": "Recovery",
+          "amount": "90s",
+          "zone": "AR"
+        }
+      ]
+    },
+    {
+      "title": "Cool-down",
+      "amount": "10min",
+      "zone": "RZ",
+      "notes": ["Gradually decrease pace, focus on breathing"]
+    }
+  ],
+  "total_distance": "10km", //@!todo: calculate this
+  "total_time": "1h 10min" //@!todo: calculate this
+}
+
 
 ###### 4.2.2.2 Hill Repeats
 
-@!todo
+```json
+{
+  "title": "Hill Repeats",
+  "date": "2024-08-15",
+  "athlete": "John Doe",
+  "notes": ["Today's workout focuses on hill repeats. Hill repeats are a great way to build strength."],
+  "zones": [
+    {
+      "zone": "AR",
+      "start": "6:00/km",
+      "end": "5:30/km",
+      "description": "Active Recovery"
+    },
+    {
+      "zone": "RZ",
+      "start": "5:30/km",
+      "end": "5:50/km",
+      "description": "Regenerative Zone"
+    },
+    {
+      "zone": "MZ",
+      "start": "4:50/km",
+      "end": "5:10/km",
+      "description": "Maintenance Zone"
+    },
+    {
+      "zone": "TZ",
+      "start": "3:40/km",
+      "end": "4:10/km",
+      "description": "Total Effort Zone"
+    }
+  ],
+  "intervals": [
+    {
+      "title": "Warm-up",
+      "amount": "1km",
+      "zone": "RZ"
+    },
+    "reps": {
+      "title": "Hill Repeats",
+      "count": 6,
+      "intervals": [
+        {
+          "title": "Hill Climb",
+          "amount": "2min",
+          "zone": "TZ",
+          "incline": "15%",
+          "note": "Focus on form"
+        },
+        {
+          "title": "Recovery",
+          "amount": "90s",
+          "zone": "AR"
+        }
+      ]
+    },
+    {
+      "title": "Cool-down",
+      "amount": "1km",
+      "zone": "RZ"
+    }
+  ],
+  "total_distance": "8km", //@!todo: calculate this
+  "total_time": "1h 10min" //@!todo: calculate this
+}
+```
 
 ### 5. Extensions
 
