@@ -1,0 +1,4 @@
+# Basic example
+@title{Easy run}
+@define_zone[RZ]{6:00/km}{5:30/km}{Regenerative Zone}
+@interval{50min}{RZ}

@@ -1,0 +1,21 @@
+@title{Hill Repeats}
+@date{2024-08-15}
+@athlete{John Doe}
+
+Today's workout focuses on hill repeats. Hill repeats are a great way to build strength.
+
+@define_zone[AR]{6:00/km}{5:30/km}{Active Recovery}
+@define_zone[RZ]{5:30/km}{5:50/km}{Regenerative Zone}
+@define_zone[MZ]{4:50/km}{5:10/km}{Maintenance Zone}
+@define_zone[TZ]{3:40/km}{4:10/km}{Total Effort Zone}
+
+@interval[Warm-up]{1km}{RZ}
+
+@reps[Hill Repeats]{6}
+  @interval[Hill Climb]{2min}{TZ}{incline=15%, note=Focus on form}
+  @interval[Recovery]{90s}{AR}
+
+@interval[Cool-down]{1km}{RZ}
+
+@total_distance
+@total_time

@@ -325,9 +325,9 @@ Guidelines:
 Hard interval session on the track.
 
 @define_zone[AR]{6:00/km}{5:30/km}{Active Recovery}
-@define_zone{RZ}{5:30/km}{5:50/km}{Regenerative Zone}
-@define_zone{MZ}{4:50/km}{5:10/km}{Maintenance Zone}
-@define_zone{TZ}{3:40/km}{4:10/km}{Total Effort Zone}
+@define_zone[RZ]{5:30/km}{5:50/km}{Regenerative Zone}
+@define_zone[MZ]{4:50/km}{5:10/km}{Maintenance Zone}
+@define_zone[TZ]{3:40/km}{4:10/km}{Total Effort Zone}
 
 @interval[Warm-up]{10min}{RZ}{note=Don't start too fast}
 
@@ -351,9 +351,9 @@ Hard interval session on the track.
 Today's workout focuses on hill repeats. Hill repeats are a great way to build strength.
 
 @define_zone[AR]{6:00/km}{5:30/km}{Active Recovery}
-@define_zone{RZ}{5:30/km}{5:50/km}{Regenerative Zone}
-@define_zone{MZ}{4:50/km}{5:10/km}{Maintenance Zone}
-@define_zone{TZ}{3:40/km}{4:10/km}{Total Effort Zone}
+@define_zone[RZ]{5:30/km}{5:50/km}{Regenerative Zone}
+@define_zone[MZ]{4:50/km}{5:10/km}{Maintenance Zone}
+@define_zone[TZ]{3:40/km}{4:10/km}{Total Effort Zone}
 
 @interval[Warm-up]{1km}{RZ}
 
