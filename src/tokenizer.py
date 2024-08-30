@@ -15,7 +15,7 @@ class Tokenizer:
       'ATHLETE': r'@athlete\{.*?\}',
       'ZONE': r'@define_zone\[\w+\]\{.*?\}\{.*?\}\{.*?\}',
       'INTERVAL': r"\s*@interval(?:\[(.*?)\])?\{([^{}]+)\}\{([^{}]+)\}(?:\{([^{}]*)\})?",
-      'REPS': r'@reps(\[\w+\])?\{.*?\}',
+      'REPS': r'@reps(?:\[(.*?)\])?\{([^{}]+)\}',
       'CALCULATION': r'@total_(distance|time)',
       'NOTE': r'.+'
     }
