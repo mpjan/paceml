@@ -27,7 +27,8 @@ class Tokenizer:
     # Tokenize the text
     for match in regex.finditer(self.text):
       token_type = match.lastgroup
-      token_value = match.group(token_type)
+      # Strip leading/trailing newlines
+      token_value = match.group(token_type).replace('\n', '')
       self.tokens.append((token_type, token_value))
 
   def get_tokens(self):

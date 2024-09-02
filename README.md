@@ -209,7 +209,7 @@ Example:
 Guidelines:
 
 1. The intervals within a repetition block should be indented with a consistent number of spaces or tabs. The indentation level should be maintained throughout the block.
-2. The `[title]` is optional.
+2. The `[title]` is optional, but the repetition count is required.
 
 #### 1.6 Calculations
 
