@@ -48,8 +48,16 @@ class Parser:
     self.workout = Workout()
 
   def parse(self):
-    while self.current_token_index < len(self.tokens):
-      token_type, token_value = self.tokens[self.current_token_index]
+    print(f'TOKENS\n=====')
+    for token in self.tokens:
+      print(f"- Token: {token}")
+    
+    print(f'\n\nPARSING\n======')
+
+    for self.current_token_index, (token_type, token_value) in enumerate(self.tokens):
+      print(f"Current token index: {self.current_token_index}")
+      print(f"Parsing token_type: {token_type} with token_value: {token_value}")
+      
       if token_type == 'TITLE':
         self.workout.metadata.title = self.extract_value(token_value)
       elif token_type == 'DATE':
@@ -63,11 +71,13 @@ class Parser:
       elif token_type == 'REPS':
         self.workout.repetitions.append(self.parse_repetition())
       elif token_type == 'CALCULATION':
+        print(Calculation(self.extract_value(token_value)))
         self.workout.calculations.append(Calculation(self.extract_value(token_value)))
       elif token_type == 'NOTE':
         self.workout.notes.append(token_value)
-      self.current_token_index += 1
+      
     return self.workout
+  
   def extract_value(self, token_value):
     return re.search(r'\{(.*?)\}', token_value).group(1)
 
@@ -76,7 +86,7 @@ class Parser:
     return Zone(match.group(1), match.group(2), match.group(3), match.group(4))
 
   def parse_interval(self, token_value):
-    match = re.match(r'@interval(?:\[(.*?)\])?\{(.*?)\}\{(.*?)\}(?:\{(.*?)\})?', token_value)
+    match = re.match(r"\s*@interval(?:\[(.*?)\])?\{([^{}]+)\}\{([^{}]+)\}(?:\{([^{}]*)\})?", token_value)
     additional_params = {}
     if match.group(4):
       params = match.group(4).split(',')
@@ -87,7 +97,7 @@ class Parser:
 
   def parse_repetition(self):
     token_type, token_value = self.tokens[self.current_token_index]
-    match = re.match(r'@reps(?:\[(.*?)\])?\{(.*?)\}', token_value)
+    match = re.match(r'@reps(?:\[(.*?)\])?\{([^{}]+)\}', token_value)
     title = match.group(1)
     count = int(match.group(2))
     self.current_token_index += 1
