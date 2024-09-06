@@ -1,0 +1,18 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 20px;
+}
+
+#visualization {
+  margin-top: 20px;
+}
+
+.interval {
+  stroke: white;
+  stroke-width: 1px;
+}
+
+.interval-label {
+  font-size: 12px;
+}
