@@ -1,5 +1,6 @@
 import re
 from paceml_tokenizer import Tokenizer
+import json
 
 class Metadata:
   def __init__(self, title=None, date=None, athlete=None):
@@ -41,6 +42,45 @@ class Workout:
 
   def add_element(self, element):
     self.elements.append(element)
+
+  def to_dict(self):
+    return {
+      "metadata": {
+        "title": self.metadata.title,
+        "date": self.metadata.date,
+        "athlete": self.metadata.athlete
+      },
+      "zones": [
+        {
+          "name": zone.name,
+          "start": zone.start,
+          "end": zone.end,
+          "description": zone.description
+        } for zone in self.zones
+      ],
+      "elements": [
+        self._element_to_dict(element) for element in self.elements
+      ],
+      "calculations": [calc.calc_type for calc in self.calculations],
+      "notes": self.notes
+    }
+
+  def _element_to_dict(self, element):
+    if isinstance(element, Interval):
+      return {
+        "type": "interval",
+        "title": element.title,
+        "amount": element.amount,
+        "zone": element.zone,
+        "additional_params": element.additional_params
+      }
+    elif isinstance(element, Repetition):
+      return {
+        "type": "repetition",
+        "title": element.title,
+        "count": element.count,
+        "intervals": [self._element_to_dict(interval) for interval in element.intervals]
+      }
 
 class Parser:
   def __init__(self, text):
@@ -93,6 +133,8 @@ class Parser:
 
   def parse_zone(self, token_value):
     match = re.match(r'@define_zone\[(.*?)\]\{(.*?)\}\{(.*?)\}\{(.*?)\}', token_value)
+    if not match:
+      raise PaceMLParseError(f"Invalid zone definition: {token_value}")
     return Zone(match.group(1), match.group(2), match.group(3), match.group(4))
 
   def parse_interval(self, token_value):
@@ -111,6 +153,18 @@ class Parser:
     title = match.group(1)
     count = int(match.group(2))
     return Repetition(count, [], title)  # Initialize with empty intervals list
+
+class PaceMLParseError(Exception):
+  """Base exception for PaceML parsing errors."""
+  pass
+
+class InvalidZoneError(PaceMLParseError):
+  """Raised when an invalid zone is encountered."""
+  pass
+
+class InvalidIntervalError(PaceMLParseError):
+  """Raised when an invalid interval is encountered."""
+  pass
 
 def print_workout(workout):
   # Metadata
@@ -150,3 +204,6 @@ def print_workout(workout):
   print('\nNotes:')
   for note in workout.notes:
     print(f'  {note}')
+
+def workout_to_json(workout, indent=2):
+  return json.dumps(workout.to_dict(), indent=indent)
