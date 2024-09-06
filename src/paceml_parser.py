@@ -35,10 +35,12 @@ class Workout:
   def __init__(self):
     self.metadata = Metadata()
     self.zones = []
-    self.standalone_intervals = []  # For intervals not in repetitions
-    self.repetitions = []
+    self.elements = []  # This will store intervals and repetitions in order
     self.calculations = []
     self.notes = []
+
+  def add_element(self, element):
+    self.elements.append(element)
 
 class Parser:
   def __init__(self, text):
@@ -48,18 +50,11 @@ class Parser:
     self.workout = Workout()
 
   def parse(self):
-    print(f'TOKENS\n=====')
-    for token in self.tokens:
-      print(f"- Token: {token}")
-    
-    print(f'\n\nPARSING\n======')
 
     in_repetition = False
     current_repetition = None
 
     for self.current_token_index, (token_type, token_value) in enumerate(self.tokens):
-      print(f"Current token index: {self.current_token_index}")
-      print(f"Parsing token_type: {token_type} with token_value: {token_value}")
       
       if token_type == 'TITLE':
         self.workout.metadata.title = self.extract_value(token_value)
@@ -74,11 +69,11 @@ class Parser:
         if in_repetition and token_value.startswith('  '):  # Check for indentation
           current_repetition.intervals.append(interval)
         else:
-          self.workout.standalone_intervals.append(interval)
+          self.workout.add_element(interval)
           in_repetition = False
       elif token_type == 'REPS':
         current_repetition = self.parse_repetition()
-        self.workout.repetitions.append(current_repetition)
+        self.workout.add_element(current_repetition)
         in_repetition = True
       elif token_type == 'CALCULATION':
         calc_type = self.extract_value(token_value)
@@ -116,3 +111,42 @@ class Parser:
     title = match.group(1)
     count = int(match.group(2))
     return Repetition(count, [], title)  # Initialize with empty intervals list
+
+def print_workout(workout):
+  # Metadata
+  print('Title:', workout.metadata.title)
+  print('Date:', workout.metadata.date)
+  print('Athlete:', workout.metadata.athlete)
+
+  # Zones
+  print('\nZones:')
+  for zone in workout.zones:
+    print(f'  {zone.name}:')
+    print(f'    Start: {zone.start}')
+    print(f'    End: {zone.end}')
+    print(f'    Description: {zone.description}')
+
+  # Elements (Intervals and Repetitions)
+  print('\nWorkout Structure:')
+  for element in workout.elements:
+    if isinstance(element, Interval):
+      print(f'  Interval: {element.title}')
+      print(f'    Amount: {element.amount}')
+      print(f'    Zone: {element.zone}')
+      print(f'    Additional Params: {element.additional_params}')
+    elif isinstance(element, Repetition):
+      print(f'  Repetition: {element.title}')
+      print(f'    Count: {element.count}')
+      print('    Intervals:')
+      for interval in element.intervals:
+        print(f'      - {interval.title}: {interval.amount} in {interval.zone}')
+
+  # Calculations
+  print('\nCalculations:')
+  for calc in workout.calculations:
+    print(f'  {calc.calc_type}')
+
+  # Notes
+  print('\nNotes:')
+  for note in workout.notes:
+    print(f'  {note}')
