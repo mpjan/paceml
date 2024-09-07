@@ -4,18 +4,20 @@
 
 Today's workout focuses on hill repeats. Hill repeats are a great way to build strength.
 
-@define_zone[AR]{6:00/km}{5:30/km}{Active Recovery}
-@define_zone[RZ]{5:30/km}{5:50/km}{Regenerative Zone}
-@define_zone[MZ]{4:50/km}{5:10/km}{Maintenance Zone}
-@define_zone[TZ]{3:40/km}{4:10/km}{Total Effort Zone}
+@define_zone[RA]{10:00/km}{8:00/km}{Recuperação Ativa}
+@define_zone[ZR]{5:37/km}{5:16/km}{Zona Regenerativa}
+@define_zone[ZM]{5:16/km}{4:57/km}{Zona de Manutenção}
+@define_zone[ZM-ZE]{4:57/km}{4:33/km}{Zona de Manutenção-Endurance}
+@define_zone[ZE]{4:33/km}{4:13/km}{Zona de Endurance}
+@define_zone[ZT]{4:13/km}{3:40/km}{Zona de Esforço Total}
 
-@interval[Warm-up]{1km}{RZ}
+@interval[Warm-up]{1km}{ZR}
 
 @reps[Hill Repeats]{6}
-  @interval[Hill Climb]{2min}{TZ}{incline=15%, note=Focus on form}
-  @interval[Recovery]{90s}{AR}
+  @interval[Hill Climb]{2min}{ZT}{incline=15%, note=Focus on form}
+  @interval[Recovery]{90s}{RA}
 
-@interval[Cool-down]{1km}{RZ}
+@interval[Cool-down]{1km}{ZR}
 
 @total_distance
 @total_time

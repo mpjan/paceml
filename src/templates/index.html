@@ -3,15 +3,123 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PaceML Workout Visualizer</title>
+  <title>PaceML Workout</title>
   <script src="https://d3js.org/d3.v7.min.js"></script>
-  <link rel="stylesheet" href="static/styles.css">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+      background-color: #f0f0f0;
+    }
+    #workout-container {
+      background-color: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    }
+    h1 {
+      text-align: center;
+      color: #333;
+    }
+    .workout-table {
+      font-family: monospace;
+      border-collapse: separate;
+      border-spacing: 0 2px;
+    }
+    .workout-table td {
+      padding: 8px 12px;
+    }
+    .workout-table tr:nth-child(even) {
+      background-color: #f8f8f8;
+    }
+    .reps-cell {
+      color: #666;
+    }
+    .interval-cell {
+      font-weight: bold;
+    }
+    .pace-cell {
+      color: #0066cc;
+    }
+  </style>
 </head>
 <body>
-  <h1 id="workout-title">Loading workout...</h1>
-  <div id="workout-info"></div>
-  <div id="visualization"></div>
-  <div id="error-message" style="color: red;"></div>
-  <script src="static/visualizer.js"></script>
+  <div id="workout-container">
+    <h1 id="workoutTitle"></h1>
+    <div id="workoutTable"></div>
+  </div>
+
+  <script>
+    function formatPace(zone, zones) {
+      const zoneInfo = zones.find(z => z.name === zone);
+      if (zoneInfo) {
+        // Use regex to extract only numbers and colons from start and end paces
+        const start = zoneInfo.start.match(/[\d:]+/)[0];
+        const end = zoneInfo.end.match(/[\d:]+/)[0];
+        return `${zone} ${start}-${end}`;
+      }
+      return zone;
+    }
+
+    function renderWorkoutTable(data) {
+      const tableData = [];
+      let inRep = false;
+      let repCount = 0;
+
+      data.elements.forEach((element, index) => {
+        if (element.type === 'interval') {
+          tableData.push({
+            reps: inRep ? (index === data.elements.length - 1 ? '└' : '┃') : '',
+            interval: element.amount,
+            pace: formatPace(element.zone, data.zones)
+          });
+        } else if (element.type === 'repetition') {
+          inRep = true;
+          repCount = element.count;
+          element.intervals.forEach((interval, i) => {
+            tableData.push({
+              reps: i === 0 ? `┌ ${repCount}x` : (i === element.intervals.length - 1 ? '└' : '┃'),
+              interval: interval.amount,
+              pace: formatPace(interval.zone, data.zones)
+            });
+          });
+          inRep = false; // Reset inRep after processing all intervals in the repetition
+        }
+      });
+
+      const table = d3.select("#workoutTable")
+        .append("table")
+        .attr("class", "workout-table");
+
+      const rows = table.selectAll("tr")
+        .data(tableData)
+        .enter()
+        .append("tr");
+
+      rows.append("td")
+        .attr("class", "reps-cell")
+        .text(d => d.reps);
+
+      rows.append("td")
+        .attr("class", "interval-cell")
+        .text(d => d.interval);
+
+      rows.append("td")
+        .attr("class", "pace-cell")
+        .text(d => d.pace);
+    }
+
+    fetch('/workout')
+      .then(response => response.json())
+      .then(data => {
+        document.getElementById('workoutTitle').textContent = data.metadata.title;
+        renderWorkoutTable(data);
+      })
+      .catch(error => console.error('Error:', error));
+  </script>
 </body>
 </html>
