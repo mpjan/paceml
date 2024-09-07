@@ -1,5 +1,5 @@
-from flask import Flask, jsonify, render_template
-from paceml_parser import Parser
+from flask import Flask, render_template
+from paceml_parser import Parser, workout_to_json
 import os
 
 app = Flask(__name__)
@@ -23,11 +23,11 @@ def get_workout():
     
     parser = Parser(text)
     workout = parser.parse()
-    return jsonify(workout.to_dict())
+    return workout_to_json(workout)
   except FileNotFoundError:
-    return jsonify({"error": f"PaceML file not found: {paceml_file}"}), 404
+    return {"error": f"PaceML file not found: {paceml_file}"}, 404
   except Exception as e:
-    return jsonify({"error": str(e)}), 500
+    return {"error": str(e)}, 500
 
 if __name__ == '__main__':
   app.run(debug=True)

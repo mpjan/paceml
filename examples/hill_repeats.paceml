@@ -4,7 +4,7 @@
 
 Today's workout focuses on hill repeats. Hill repeats are a great way to build strength.
 
-@define_zone[RA]{10:00/km}{8:00/km}{Recuperação Ativa}
+@define_zone[RA]{9:00/km}{7:00/km}{Recuperação Ativa}
 @define_zone[ZR]{5:37/km}{5:16/km}{Zona Regenerativa}
 @define_zone[ZM]{5:16/km}{4:57/km}{Zona de Manutenção}
 @define_zone[ZM-ZE]{4:57/km}{4:33/km}{Zona de Manutenção-Endurance}
